@@ -26,6 +26,7 @@ resource "aws_key_pair" "quickstart_key_pair" {
 resource "aws_security_group" "rancher_sg_allowall" {
   name        = "${var.prefix}-rancher-allowall"
   description = "Rancher quickstart - allow all traffic"
+  vpc_id      = var.vpc_id
 
   ingress {
     from_port   = "0"
@@ -50,9 +51,9 @@ resource "aws_security_group" "rancher_sg_allowall" {
 resource "aws_instance" "rancher_server" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
-
+  subnet_id        = var.subnet_id
   key_name        = aws_key_pair.quickstart_key_pair.key_name
-  security_groups = [aws_security_group.rancher_sg_allowall.name]
+  security_groups = [aws_security_group.rancher_sg_allowall.id]
 
   user_data = templatefile(
     join("/", [path.module, "../cloud-common/files/userdata_rancher_server.template"]),
@@ -75,7 +76,7 @@ resource "aws_instance" "rancher_server" {
 
     connection {
       type        = "ssh"
-      host        = self.public_ip
+      host        = self.private_ip
       user        = local.node_username
       private_key = tls_private_key.global_key.private_key_pem
     }
@@ -112,7 +113,7 @@ module "rancher_common" {
 resource "aws_instance" "quickstart_node" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
-
+  subnet_id     = var.subnet_id
   key_name        = aws_key_pair.quickstart_key_pair.key_name
   security_groups = [aws_security_group.rancher_sg_allowall.name]
 
@@ -134,7 +135,7 @@ resource "aws_instance" "quickstart_node" {
 
     connection {
       type        = "ssh"
-      host        = self.public_ip
+      host        = self.private_ip
       user        = local.node_username
       private_key = tls_private_key.global_key.private_key_pem
     }

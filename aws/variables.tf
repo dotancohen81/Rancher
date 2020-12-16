@@ -68,7 +68,16 @@ variable "rancher_server_admin_password" {
   description = "Admin password to use for Rancher server bootstrap"
 }
 
+variable "subnet_id" {
+  type        = string 
+  description = "Private Subnet"
+  
+}
+variable "vpc_id" {
+  type        = string
+  description = "VPC ID"
 
+}
 # Local variables used to reduce repetition
 locals {
   node_username = "ubuntu"
